@@ -31,7 +31,7 @@ sudo ./install_docker.sh
 Na raiz do projeto, execute o comando abaixo para construir e subir os containers em segundo plano:
 
 ```bash
-docker compose up -d
+sudo docker compose up -d
 ```
 
 ## 📄 **Licença**
