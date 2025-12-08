@@ -26,6 +26,13 @@ Após baixar ou clonar este repositório, torne o script executável e execute:
 chmod +x install_docker.sh
 sudo ./install_docker.sh
 ```
+## 🐳 **Inicializando o Docker Compose**
+
+Na raiz do projeto, execute o comando abaixo para construir e subir os containers em segundo plano:
+
+```bash
+docker compose up -d
+```
 
 ## 📄 **Licença**
   - MIT License — livre para uso acadêmico e profissional.
