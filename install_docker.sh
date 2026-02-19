@@ -23,5 +23,13 @@ apt-cache policy docker-ce
 # Instala o Docker
 sudo apt install -y docker-ce
 
-# Mostra o status do serviço Docker
-sudo systemctl status docker
+# Instala o Docker e o plugin do Docker Compose
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+
+# Adiciona o usuário padrão do Ubuntu na AWS ao grupo docker (evita ter que usar sudo docker)
+sudo usermod -aG docker ubuntu
+
+echo "Docker instalado com sucesso!"
+echo "ATENÇÃO: Você precisa sair do SSH e entrar novamente para aplicar as permissões do grupo Docker."
+
+
