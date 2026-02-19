@@ -26,7 +26,7 @@ Após baixar ou clonar este repositório, torne o script executável e execute:
 chmod +x install_docker.sh
 sudo ./install_docker.sh
 ```
-## Configuração Inicial (Linux/AWS)
+## Configuração Inicial (Linux/Cloud)
 Antes de subir os containers pela primeira vez, você precisa criar as pastas do Mosquitto e dar a permissão correta para evitar erros de escrita:
 
 ```bash
