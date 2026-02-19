@@ -1,0 +1,7 @@
+# Ignora arquivos gerados pelo Mosquitto
+data/
+log/
+
+# Ignora arquivos temporários do Python
+__pycache__/
+*.pyc
