@@ -26,6 +26,13 @@ Após baixar ou clonar este repositório, torne o script executável e execute:
 chmod +x install_docker.sh
 sudo ./install_docker.sh
 ```
+## Configuração Inicial (Linux/AWS)
+Antes de subir os containers pela primeira vez, você precisa criar as pastas do Mosquitto e dar a permissão correta para evitar erros de escrita:
+
+```bash
+mkdir -p data log
+sudo chown -R 1883:1883 data log
+```
 ## 🐳 **Inicializando o Docker Compose**
 
 Na raiz do projeto, execute o comando abaixo para construir e subir os containers em segundo plano:
