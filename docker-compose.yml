@@ -23,11 +23,31 @@ services:
       - "8000:8000"
     depends_on:
       - mosquitto
+      - mongodb
     environment:
       - MQTT_BROKER_HOST=mosquitto
+      - MONGO_URI=mongodb://admin:admin@mongodb:27017/ # Credenciais e host do banco
+    networks:
+      - iot_network
+
+  # Banco de Dados MongoDB
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017" # Porta exposta para acesso externo com senha
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=admin
+    volumes:
+      - mongodb_data:/data/db
+    restart: always
     networks:
       - iot_network
 
 networks:
   iot_network:
     driver: bridge
+
+volumes:
+  mongodb_data:
