@@ -23,7 +23,9 @@ Este projeto serve como base para:
 Após baixar ou clonar este repositório, torne o script executável e execute:
 
 ```bash
-chmod +x install_docker.sh
+sudo chmod +x install_docker.sh
+```
+```bash
 sudo ./install_docker.sh
 ```
 ## Configuração Inicial (Linux/Cloud)
@@ -31,6 +33,8 @@ Antes de subir os containers pela primeira vez, você precisa criar as pastas do
 
 ```bash
 mkdir -p data log
+```
+```bash
 sudo chown -R 1883:1883 data log
 ```
 ## 🐳 **Inicializando o Docker Compose**
