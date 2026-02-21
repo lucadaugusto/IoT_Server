@@ -8,15 +8,24 @@ import json
 import threading
 import asyncio
 from typing import List
+from datetime import datetime
+from pymongo import MongoClient
 
-# --- Configurações ---
+# --- Configurações MQTT ---
 # Se a variável de ambiente existir (no Docker), usa ela via 'mosquitto'.
 # Se não, usa o 'test.mosquitto.org' ou 'localhost' para testes locais.
 MQTT_BROKER = os.getenv("MQTT_BROKER_HOST", "test.mosquitto.org") 
 MQTT_PORT = 1883
 MQTT_TOPIC_SUB = "sensor/dht11/dados"
 
-app = FastAPI(title="Gateway MQTT <-> REST API")
+# --- Configurações MongoDB ---
+# A senha e usuário já vêm injetados via Docker pelo docker-compose.yml
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://admin:admin@localhost:27017/")
+mongo_client = MongoClient(MONGO_URI)
+db = mongo_client["iot_database"]
+collection = db["sensor_data"]
+
+app = FastAPI(title="Gateway MQTT <-> REST API com MongoDB")
 
 # Variável global para armazenar a última mensagem recebida
 last_received_message = {
@@ -67,6 +76,15 @@ def on_message(client, userdata, msg):
         }
         print(f"Mensagem recebida via MQTT: {payload_data}")
         
+        # --- Persistência de Dados no MongoDB (Série Temporal) ---
+        documento = {
+            "timestamp": datetime.utcnow(),
+            "topico": msg.topic,
+            "dados": payload_data
+        }
+        collection.insert_one(documento)
+        # --------------------------------------------------------
+        
         # Envia para os WebSockets conectados (Thread Safe)
         if event_loop:
             asyncio.run_coroutine_threadsafe(manager.broadcast(last_received_message), event_loop)
@@ -116,6 +134,16 @@ def get_mqtt_data():
     Equivalente a 'consumir' o dado do sensor.
     """
     return last_received_message
+
+@app.get("/api/historico")
+def get_historico(limite: int = 50):
+    """
+    Método GET: Retorna os últimos 'limite' registros guardados no MongoDB.
+    Ótimo para gerar gráficos e Dashboards de Séries Temporais.
+    """
+    # Busca na coleção ordenando pela data mais recente (timestamp decrescente)
+    dados = list(collection.find({}, {"_id": 0}).sort("timestamp", -1).limit(limite))
+    return {"historico": dados}
 
 @app.post("/api/publicar")
 def post_mqtt_data(payload: MessagePayload):
