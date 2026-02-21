@@ -32,7 +32,7 @@ sudo ./install_docker.sh
 Antes de subir os containers pela primeira vez, você precisa criar as pastas do Mosquitto e dar a permissão correta para evitar erros de escrita:
 
 ```bash
-mkdir -p data log
+sudo mkdir -p data log
 ```
 ```bash
 sudo chown -R 1883:1883 data log
