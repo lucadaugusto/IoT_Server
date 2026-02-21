@@ -52,4 +52,9 @@ sudo docker compose up -d
 ```
 
 ## 📄 **Licença**
-  - MIT License — livre para uso acadêmico e profissional.
+
+Este projeto é disponibilizado sob a **Licença MIT**. 
+
+Ele foi desenvolvido com propósitos educacionais e é **livre para uso, modificação e distribuição** (académica ou profissional). A única exigência é que o aviso de direitos de autor e os créditos aos criadores originais sejam incluídos em qualquer cópia ou modificação do código.
+
+Veja o ficheiro [LICENSE](LICENSE) para ler os termos completos.
