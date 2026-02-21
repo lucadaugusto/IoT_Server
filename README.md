@@ -70,32 +70,21 @@ sudo docker compose up -d --build
 
 ## 🌐 Acesso e Endpoints Úteis
 
-Após o ambiente estar em funcionamento, você poderá acessar os seguintes serviços pelo navegador:
+Após o ambiente estar pronto, é possível acessar as seguintes funcionalidades através do navegador/browser:
 
-**Dashboard (Tempo Real):**
-http://IP_Servidor:8000/
+- **Dashboard (Tempo Real):** `http://IP_Servidor:8000/` (Página HTML com WebSockets).
+- **Testes da API (Swagger):** `http://IP_Servidor:8000/docs` (Ideal para simular envios JSON e testar rotas sem precisar do Postman).
+- **Histórico de Dados:** `http://IP_Servidor:8000/api/historico?limite=50`
+- **MongoDB (Acesso Externo):** Porta `27017` (Administrador: `admin` | Senha: `admin`).
 
-**(Página HTML com WebSockets)**
-
-**Testes da API (Swagger):**
-http://IP_Servidor:8000/docs
-
-**(Ideal para simular envios JSON e testar rotas sem precisar do Postman)**
-
-**Histórico de Dados:**
-http://IP_Servidor:8000/api/historico?limite=50
-
-**MongoDB (Acesso Externo):**
-Porta 27017
-Usuário: admin
-Senha: admin
+*(**Nota:** Substituir `IP_Servidor` pelo IP da máquina onde os containers Docker estão rodando, ou por `localhost` se estiverem rodando na própria máquina).*
 
 ---
 
 ## 📄 Licença
 
-Este projeto é disponibilizado sob a Licença MIT.
+Este projeto é disponibilizado sob a **Licença MIT**.
 
-Foi desenvolvido com fins educacionais e é livre para uso, modificação e distribuição (acadêmica ou profissional). A única exigência é que o aviso de direitos autorais e os créditos aos criadores originais sejam incluídos em qualquer cópia ou modificação do código.
+Foi desenvolvido com fins educacionais e é **livre para uso, modificação e distribuição** (acadêmica ou profissional). A única exigência é que o aviso de direitos autorais e os créditos aos criadores originais sejam incluídos em qualquer cópia ou modificação dos arquivos de código e do projeto.
 
-Consulte o arquivo LICENSE para ler os termos completos.
+Consulte o arquivo [LICENSE](LICENSE) para ler os termos completos.
