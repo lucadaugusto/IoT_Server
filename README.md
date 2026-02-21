@@ -23,6 +23,12 @@ Este projeto serve como base para:
 Após baixar ou clonar este repositório, torne o script executável e execute:
 
 ```bash
+sudo git clone https://github.com/lucadaugusto/IoT_Server
+```
+```bash
+cd IoT_Server
+```
+```bash
 sudo chmod +x install_docker.sh
 ```
 ```bash
