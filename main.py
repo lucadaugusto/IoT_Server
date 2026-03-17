@@ -16,7 +16,7 @@ from pymongo import MongoClient
 # Se não, usa o 'test.mosquitto.org' ou 'localhost' para testes locais.
 MQTT_BROKER = os.getenv("MQTT_BROKER_HOST", "test.mosquitto.org") 
 MQTT_PORT = 1883
-MQTT_TOPIC_SUB = "sensor/dht11/dados"
+MQTT_TOPIC_SUB = "topico/dados"
 
 # --- Configurações MongoDB ---
 # A senha e usuário já vêm injetados via Docker pelo docker-compose.yml
