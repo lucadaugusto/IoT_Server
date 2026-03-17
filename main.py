@@ -23,7 +23,7 @@ MQTT_TOPIC_SUB = "topico/dados"
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://admin:admin@localhost:27017/")
 mongo_client = MongoClient(MONGO_URI)
 db = mongo_client["iot_database"]
-collection = db["sensor_data"]
+collection = db["topico_data"]
 
 app = FastAPI(title="Gateway MQTT <-> REST API com MongoDB")
 
