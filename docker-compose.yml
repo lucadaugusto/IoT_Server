@@ -1,21 +1,31 @@
 version: "3.9"
 
+# Copie o arquivo .env.example para .env e preencha as variáveis antes de executar:
+#   cp .env.example .env
+
 services:
-  # Broker Mosquitto
+
   mosquitto:
     image: eclipse-mosquitto:2
     container_name: mosquitto
+    command: >
+      sh -c "mosquitto_passwd -b -c /mosquitto/config/passwd $$MQTT_USER $$MQTT_PASSWORD &&
+             mosquitto -c /mosquitto/config/mosquitto.conf"
     ports:
-      - "1883:1883"   # Porta MQTT padrão
-      - "9001:9001"   # WebSocket (opcional)
+      - "1883:1883"
+      - "9001:9001"
+    environment:
+      - MQTT_USER=${MQTT_USER:-iot_user}
+      - MQTT_PASSWORD=${MQTT_PASSWORD:-iot_password}
     volumes:
-      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
-      - ./data:/mosquitto/data
-      - ./log:/mosquitto/log
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_log:/mosquitto/log
+    user: "1883:1883"
+    restart: unless-stopped
     networks:
       - iot_network
 
-  # API FastAPI
   api_gateway:
     build: .
     container_name: gateway_api
@@ -26,19 +36,21 @@ services:
       - mongodb
     environment:
       - MQTT_BROKER_HOST=mosquitto
-      - MONGO_URI=mongodb://admin:admin@mongodb:27017/ # Credenciais e host do banco
+      - MQTT_USER=${MQTT_USER:-iot_user}
+      - MQTT_PASSWORD=${MQTT_PASSWORD:-iot_password}
+      - MONGO_URI=mongodb://${MONGO_USER:-admin}:${MONGO_PASSWORD:-admin}@mongodb:27017/
+    restart: unless-stopped
     networks:
       - iot_network
 
-  # Banco de Dados MongoDB
   mongodb:
     image: mongo:latest
     container_name: mongodb
     ports:
-      - "27017:27017" # Porta exposta para acesso externo com senha
+      - "27017:27017"
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=admin
-      - MONGO_INITDB_ROOT_PASSWORD=admin
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER:-admin}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD:-admin}
     volumes:
       - mongodb_data:/data/db
     restart: always
@@ -51,3 +63,6 @@ networks:
 
 volumes:
   mongodb_data:
+  mosquitto_data:
+  mosquitto_log:
+
