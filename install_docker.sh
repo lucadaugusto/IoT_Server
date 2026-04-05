@@ -1,35 +1,64 @@
 #!/bin/bash
-# Script de instalação do Docker no Ubuntu
+# -----------------------------------------------------------------------
+# install_docker.sh — Instalação do Docker + Docker Compose no Ubuntu
+# Compatível com: Ubuntu 20.04, 22.04, 24.04 | amd64, arm64
+# Uso: bash install_docker.sh
+# -----------------------------------------------------------------------
+set -e  # Para imediatamente se qualquer comando falhar
 
-# Atualiza pacotes
-sudo apt update
+# --- Detecta usuário atual (funciona em AWS, GCP, Azure e máquinas locais) ---
+USUARIO="${SUDO_USER:-$USER}"
 
-# Instala dependências
-sudo apt install -y apt-transport-https ca-certificates curl software-properties-common
+echo "==> Atualizando pacotes..."
+sudo apt-get update -y
 
-# Adiciona a chave GPG oficial do Docker
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+echo "==> Instalando dependências..."
+sudo apt-get install -y \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release
 
-# Adiciona o repositório estável do Docker
-sudo add-apt-repository \
-   "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+# --- Adiciona chave GPG oficial do Docker (método atual — sem apt-key) ---
+echo "==> Adicionando chave GPG do Docker..."
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
+    | sudo gpg --dearmor --yes -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
 
-# Atualiza novamente
-sudo apt update
+# --- Adiciona repositório detectando versão e arquitetura automaticamente ---
+echo "==> Adicionando repositório Docker..."
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+  https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" \
+  | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-# Exibe informações sobre o pacote Docker
-apt-cache policy docker-ce
+echo "==> Instalando Docker Engine e Docker Compose..."
+sudo apt-get update -y
+sudo apt-get install -y \
+    docker-ce \
+    docker-ce-cli \
+    containerd.io \
+    docker-compose-plugin
 
-# Instala o Docker
-sudo apt install -y docker-ce
+# --- Adiciona o usuário atual ao grupo docker ---
+echo "==> Adicionando usuário '$USUARIO' ao grupo docker..."
+sudo usermod -aG docker "$USUARIO"
 
-# Instala o Docker e o plugin do Docker Compose
-sudo apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+# --- Habilita Docker para iniciar automaticamente no boot ---
+sudo systemctl enable docker
+sudo systemctl start docker
 
-# Adiciona o usuário padrão do Ubuntu na AWS ao grupo docker (evita ter que usar sudo docker)
-sudo usermod -aG docker ubuntu
+# --- Verifica instalação ---
+echo ""
+echo "==> Versões instaladas:"
+docker --version
+docker compose version
 
+echo ""
 echo "Docker instalado com sucesso!"
-echo "ATENÇÃO: Você precisa sair do SSH e entrar novamente para aplicar as permissões do grupo Docker."
 
-
+# --- Aplica permissões de grupo sem precisar reconectar via SSH ---
+echo "==> Aplicando permissões do grupo docker na sessão atual..."
+exec newgrp docker
