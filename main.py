@@ -15,7 +15,7 @@ from pymongo import MongoClient
 # --- Configurações MQTT ---
 MQTT_BROKER    = os.getenv("MQTT_BROKER_HOST", "test.mosquitto.org")
 MQTT_PORT      = 1883
-MQTT_TOPIC_SUB = "v1/dispositivos/sensor/dados"  # Tópico padronizado (igual ao ESP32.ino)
+MQTT_TOPIC_SUB = "v1/dispositivos/sensor/+/dados"  # Wildcard: recebe dados de todos os alunos
 MQTT_USER      = os.getenv("MQTT_USER")
 MQTT_PASSWORD  = os.getenv("MQTT_PASSWORD")
 
@@ -51,7 +51,6 @@ class ConnectionManager:
                 self.active_connections.remove(websocket)
 
     async def broadcast(self, message: dict):
-        """Envia para todos os clientes e remove conexões mortas."""
         dead: List[WebSocket] = []
         with self._lock:
             connections = list(self.active_connections)
@@ -80,11 +79,6 @@ def on_connect(client, userdata, flags, rc, properties=None):
         print(f"Falha na conexão MQTT, código: {rc}")
 
 def on_message(client, userdata, msg):
-    """
-    Callback executado na thread interna do paho-mqtt.
-    Valida que o payload é um JSON objeto (dict) antes de persistir.
-    Usa threading.Lock para acesso seguro à variável global.
-    """
     global last_received_message
     try:
         payload_str = msg.payload.decode("utf-8")
@@ -92,14 +86,12 @@ def on_message(client, userdata, msg):
         print(f"Payload com encoding inválido: {e}")
         return
 
-    # Validação: exige JSON bem-formado
     try:
         payload_data = json.loads(payload_str)
     except json.JSONDecodeError as e:
         print(f"Payload ignorado (JSON inválido): {e} | Raw: {payload_str[:120]}")
         return
 
-    # Validação: exige objeto JSON (dict), não lista/string/número
     if not isinstance(payload_data, dict):
         print(f"Payload ignorado: esperado objeto JSON, recebido {type(payload_data).__name__}")
         return
@@ -129,7 +121,7 @@ def on_message(client, userdata, msg):
     if event_loop and not event_loop.is_closed():
         asyncio.run_coroutine_threadsafe(manager.broadcast(novo_estado), event_loop)
 
-# --- Inicialização do Cliente MQTT ---
+# --- Cliente MQTT ---
 try:
     mqtt_client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
 except AttributeError:
@@ -141,7 +133,7 @@ mqtt_client.on_message = on_message
 if MQTT_USER and MQTT_PASSWORD:
     mqtt_client.username_pw_set(MQTT_USER, MQTT_PASSWORD)
 
-# --- Lifespan: substitui os deprecated @app.on_event ---
+# --- Lifespan ---
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global event_loop
@@ -162,8 +154,6 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# --- Modelos Pydantic ---
-
 class MessagePayload(BaseModel):
     topic: str
     message: Union[str, dict]
@@ -175,17 +165,13 @@ class MessagePayload(BaseModel):
             raise ValueError("O campo 'topic' não pode ser vazio.")
         return v
 
-# --- Endpoints REST ---
-
 @app.get("/api/dados")
 def get_mqtt_data():
-    """Retorna o último dado recebido pelo subscriber MQTT."""
     with _message_lock:
         return dict(last_received_message)
 
 @app.get("/api/historico")
 def get_historico(limite: int = 50):
-    """Retorna os últimos N registros do MongoDB, ordenados por timestamp decrescente."""
     if limite < 1 or limite > 1000:
         raise HTTPException(status_code=400, detail="O parâmetro 'limite' deve estar entre 1 e 1000.")
     dados = list(collection.find({}, {"_id": 0}).sort("timestamp", -1).limit(limite))
@@ -193,7 +179,6 @@ def get_historico(limite: int = 50):
 
 @app.post("/api/publicar")
 def post_mqtt_data(payload: MessagePayload):
-    """Recebe um JSON via HTTP e publica no Broker MQTT."""
     try:
         msg_content = payload.message
         if isinstance(msg_content, dict):
@@ -232,7 +217,6 @@ async def get():
             <h1>Gateway MQTT &harr; WebSocket</h1>
             <div class="card">
                 <p>Status do WebSocket: <span id="ws-status" style="color:orange">Conectando...</span></p>
-                <h3>Tópico: <code>v1/dispositivos/sensor/dados</code></h3>
                 <h3>Último Dado Recebido:</h3>
                 <pre id="data">Aguardando dados...</pre>
             </div>
@@ -250,4 +234,3 @@ async def get():
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
-
