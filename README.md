@@ -68,6 +68,27 @@ sudo docker compose up -d --build
 ```
 ---
 
+## 🔌 Liberação de Portas (Firewall)
+
+Para que os serviços do projeto fiquem acessíveis externamente, certifique-se de que as seguintes portas estão liberadas no seu firewall (UFW, Security Groups da AWS, Regras de Rede GCP, etc.):
+
+| Serviço | Porta | Descrição |
+| :--- | :--- | :--- |
+| **API / Backend** | `8000` | Comunicação com a interface e rotas REST |
+| **MQTT Broker** | `1883` | Conexão de dispositivos via protocolo MQTT |
+| **MongoDB** | `27017` | Acesso direto ao banco de dados (se necessário) |
+
+### Comando para liberar via UFW (Linux)
+
+Se você estiver utilizando o `ufw`, execute os comandos abaixo para permitir o tráfego de entrada:
+
+```bash
+sudo ufw allow 8000/tcp
+sudo ufw allow 1883/tcp
+sudo ufw allow 27017/tcp
+sudo ufw reload
+```
+
 ## 🌐 Acesso e Endpoints Úteis
 
 Após o ambiente estar pronto, é possível acessar as seguintes funcionalidades através do navegador/browser:
